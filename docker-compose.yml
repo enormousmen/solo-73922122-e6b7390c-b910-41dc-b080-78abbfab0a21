@@ -1,0 +1,12 @@
+services:
+  layer-merger:
+    build: .
+    image: oci-layer-merger:latest
+    ports:
+      - "8080:8000"
+    environment:
+      OCI_LAYOUT_DIR: /data/oci-layout
+    volumes:
+      # the local OCI image layout the service works on
+      - ./oci-layout:/data/oci-layout
+    restart: unless-stopped
