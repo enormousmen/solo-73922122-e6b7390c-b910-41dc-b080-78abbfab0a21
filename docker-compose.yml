@@ -1,12 +1,25 @@
 services:
   layer-merger:
-    build: .
+    build:
+      context: .
+      args:
+        # Match the host user so the ./oci-layout bind mount is writable for
+        # /merge. Override with APP_UID=$(id -u) APP_GID=$(id -g).
+        APP_UID: "${APP_UID:-1000}"
+        APP_GID: "${APP_GID:-1000}"
     image: oci-layer-merger:latest
+    # Also force the runtime uid/gid (takes precedence over Dockerfile USER).
+    user: "${APP_UID:-1000}:${APP_GID:-1000}"
     ports:
-      - "8080:8000"
+      - "${HOST_PORT:-8080}:8000"
     environment:
       OCI_LAYOUT_DIR: /data/oci-layout
     volumes:
       # the local OCI image layout the service works on
       - ./oci-layout:/data/oci-layout
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

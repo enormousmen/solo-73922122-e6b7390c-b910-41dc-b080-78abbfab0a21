@@ -13,6 +13,16 @@ from typing import BinaryIO
 from . import oci
 from .merge import LayerMerger
 
+# Re-exported so callers may import the verification use-case from either
+# ``app.service`` or ``app.entrypoint``.
+from .entrypoint import (  # noqa: E402,F401
+    check_default_entrypoint,
+    check_entrypoint,
+    resolve_and_check_entrypoint,
+    verify_default_command,
+    verify_entrypoint,
+)
+
 # Serialize merges: index.json is read-modify-written and blob publishing is
 # not coordinated with anyone else.  One process-wide lock is enough for the
 # single-worker deployment this service targets.

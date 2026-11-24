@@ -28,8 +28,10 @@ if [[ "${DIRECT:-0}" == "1" ]]; then
   API_PID=$!
   trap 'kill ${API_PID} 2>/dev/null || true' EXIT
 else
-  echo "==> 2/5  Start API with Docker Compose on :${PORT}"
-  docker compose up -d --build
+  echo "==> 2/5  Start API with Docker Compose on :${PORT} (non-root container user)"
+  # The service runs as a non-root user; forward the host uid/gid so the
+  # ./oci-layout bind mount stays writable for /merge.
+  APP_UID="$(id -u)" APP_GID="$(id -g)" HOST_PORT="${PORT}" docker compose up -d --build
 fi
 
 echo "==> 3/5  Wait for the API to become healthy"
